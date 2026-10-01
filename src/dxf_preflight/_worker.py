@@ -21,10 +21,20 @@ def main() -> None:
         _emit({'kind': 'snapshot', 'path': request['path'], 'sha256': digest})
         emitted = True
 
-    report = _analyze(request['path'], tolerance=request['tolerance'], expected_unit=request['expected_unit'], _on_snapshot=snapshot)
+    geometry = None
+
+    def capture(value):
+        nonlocal geometry
+        geometry = value
+
+    include_geometry = request.get("include_geometry", False)
+    report = _analyze(request['path'], tolerance=request['tolerance'], expected_unit=request['expected_unit'], _on_snapshot=snapshot, _on_geometry=capture if include_geometry else None)
     if not emitted:
         snapshot(None)
-    _emit({'kind': 'report', 'report': report})
+    final = {'kind': 'report', 'report': report}
+    if include_geometry:
+        final['geometry'] = geometry
+    _emit(final)
 
 
 if __name__ == '__main__':

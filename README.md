@@ -87,11 +87,16 @@ Write both reports beside an exact export:
 ```sh
 mkdir -p local-reports
 .venv/bin/dxf-preflight fixtures/open_chain.dxf --expected-unit mm \
-  --json-report local-reports/open.json --text-report local-reports/open.txt
+  --json-report local-reports/open.json --text-report local-reports/open.txt \
+  --html-report local-reports/open.html
 ```
 
-This exits 1 while writing both reports. Parent folders must exist. Each report
-is replaced atomically, but two reports are **not one atomic transaction**;
+This exits 1 while writing all three reports. Open `open.html` in a local browser
+for a numbered SVG overview and CAD locators. The file works offline with no
+scripts or external assets. The preview adds no checks; unsupported geometry
+is never drawn. See [visual scope, limits and privacy](docs/VISUAL_REPORT.md).
+Parent folders must exist. Each report
+is replaced atomically, but multiple reports are **not one atomic transaction**;
 exit 4 names any report already written. Input aliases and colliding report
 paths are rejected, including symlinks/hardlinks. Avoid concurrent path changes.
 The report hash identifies the exact captured bytes that ezdxf parsed from a private temporary copy. The original source is read again afterward and compared with that capture; analysis never saves the original DXF. Only the bytes at checked read points are compared; transient changes between reads can be missed. This is not an atomic snapshot, hostile-race or security guarantee.

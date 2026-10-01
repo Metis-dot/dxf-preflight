@@ -309,7 +309,7 @@ def _capture_bytes(path: Path) -> bytes:
         return stream.read(MAX_FILE_BYTES + 1)
 
 
-def _analyze(path: str | Path, *, tolerance: float = 1e-6, expected_unit: str | None = None, _on_snapshot=None) -> dict:
+def _analyze(path: str | Path, *, tolerance: float = 1e-6, expected_unit: str | None = None, _on_snapshot=None, _on_geometry=None) -> dict:
     """Inspect a file without saving/modifying it. Tolerance is in drawing units."""
     if not math.isfinite(tolerance) or tolerance <= 0:
         raise ValueError("tolerance must be finite and greater than zero")
@@ -396,6 +396,9 @@ def _analyze(path: str | Path, *, tolerance: float = 1e-6, expected_unit: str | 
     report["checks"]["scope"] = "checked" if scan_complete else "unknown"
     report["checks"]["segment_extraction"] = "unknown" if not scan_complete or report["summary"]["unsupported_entities"] else "checked"
     report["summary"]["extracted_segments"] = len(segments)
+    if _on_geometry is not None:
+        from .visual import capture_geometry
+        _on_geometry(capture_geometry(segments, report, scan_complete=scan_complete))
     if len(segments) <= MAX_SEGMENTS:
         if not segments:
             _finding(report, "GEOM003", "error", "No supported line segments were extracted.")
