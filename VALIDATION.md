@@ -137,3 +137,48 @@ source-checkout worker path explicit; the clean wheel checks did not use it.
   separately, not bundled. No full redistribution license audit was performed
 - No real customer geometry, private engineering IP, user interviews,
   willingness-to-pay evidence or production approval exists in this checkpoint
+
+## Offline HTML preview checkpoint (experimental feature)
+
+Executed on 2026-10-01 UTC on Python 3.12.14 / Linux x86_64, against the same
+original invented fixtures. This section records the local visual-report patch
+and supersedes the 189-test total for this checkout only.
+
+- Final source suite: **263 passed in 16.73 seconds** (189 retained + 74 new)
+- `compileall -q src scripts tests` and `git diff --check`: passed
+- Pinned build tools produced wheel and sdist successfully; the wheel includes
+  `visual.py`, and the sdist includes visual docs and tests. Three local HTML
+  examples were generated and checked separately; generated reports are not
+  included in the draft feature change
+- Project wheel newly installed into a fresh venv with system packages disabled,
+  without editable/source installation. Pinned dependency files were copied
+  from the earlier validated isolated install, not downloaded/reinstalled.
+  `pip check` passed; installed imports resolved to the new venv's site-packages
+- Installed console ran all 15 fixtures from an independent directory with
+  `PYTHONPATH` removed. HTML and no-HTML runs had identical JSON stdout and
+  exit codes; JSON validated against schema 1.1, source hashes matched and
+  original bytes were unchanged. Installed module missing-input/HTML run
+  returned exit 3 / unreadable with no fabricated display geometry
+- Independent review verified all 15 fixture renderings, one captured source
+  parse, escaped hostile metadata, bounded display output, huge and subnormal
+  coordinate normalization, and malformed-display fail-closed behavior
+- Structural HTML/SVG and fragment-ID tests passed. **Browser visual/rendering,
+  responsive layout, actual fragment-click behavior and print QA were not
+  completed**: local Chromium could not create sockets in this executor, and
+  the cloud browser's URL policy rejected local file URLs. No policy bypass
+  or external report publication was attempted
+
+New regressions cover input/report aliases across three outputs; partial-write
+exit 4; timeout/unreadable/incomplete display absence or qualified subset
+previews; geometry capture from the same hashed snapshot; preserved JSON/text
+and API results; known geographic locators versus unsupported/unknown findings;
+shortened metadata and omitted marker/finding/segment/not-checked entries;
+finite SVG output for enormous, narrow, subnormal and zero-size extents; hostile
+HTML/SVG metadata; mismatched/malformed/oversized display transport; and integer
+or JSON-exponent overflow rejected fail-closed. Rejecting `1e999` in worker
+JSON also closes a pre-existing invalid-result serialization crash path.
+
+Display caps do not provide a hard memory/CPU limit or a total-CLI wall deadline.
+Opt-in capture/serialization adds worker work inside the existing deadline.
+Parent validation, HTML rendering and output writing remain outside it. Normal
+report analysis budgets and conservative/manual-review meaning are unchanged.

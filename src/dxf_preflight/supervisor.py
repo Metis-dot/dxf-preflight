@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import Counter
 from importlib.resources import files
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -29,8 +30,15 @@ def _reject_constant(value: str):
     raise ValueError(f'Non-finite JSON constant: {value}')
 
 
+def _finite_float(value: str) -> float:
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError('Non-finite JSON number')
+    return number
+
+
 def _loads(text: str):
-    return json.loads(text, parse_constant=_reject_constant)
+    return json.loads(text, parse_constant=_reject_constant, parse_float=_finite_float)
 
 
 def _snapshot_record(stdout: str | bytes | None, path: Path) -> str | None:
@@ -73,13 +81,16 @@ def _check_worker_result(report: object, request: dict | None = None) -> dict:
     return report
 
 
-def analyze_supervised(path: Path, *, tolerance: float, expected_unit: str | None, timeout: float) -> dict:
+def _analyze_supervised(path: Path, *, tolerance: float, expected_unit: str | None, timeout: float, include_geometry: bool = False) -> tuple[dict, dict | None]:
     """The fixed worker hashes, parses and analyzes inside one wall deadline.
 
     subprocess.run kills and reaps its direct child on timeout. Parent path
     checks, result validation and report writing are outside this deadline.
     """
     request = {'path': str(path), 'tolerance': tolerance, 'expected_unit': expected_unit}
+    geometry = None
+    if include_geometry:
+        request['include_geometry'] = True
     reason = None
     rule = 'SCOPE009'
     before_hash = None
@@ -105,9 +116,12 @@ def analyze_supervised(path: Path, *, tolerance: float, expected_unit: str | Non
             if initial != {'kind': 'snapshot', 'path': str(path), 'sha256': before_hash}:
                 raise ValueError('Invalid initial snapshot record')
             final = _loads(records[1])
-            if not isinstance(final, dict) or final.get('kind') != 'report' or set(final) != {'kind', 'report'}:
+            if not isinstance(final, dict) or final.get('kind') != 'report' or set(final) != ({'kind', 'report', 'geometry'} if include_geometry else {'kind', 'report'}):
                 raise ValueError('Invalid final report record')
             report = _check_worker_result(final['report'], request)
+            if include_geometry:
+                from .visual import validate_geometry
+                geometry = validate_geometry(final['geometry'], report)
             if report['input']['sha256'] != before_hash:
                 raise ValueError('Initial hash and captured report hash disagree')
     except subprocess.TimeoutExpired as exc:
@@ -117,6 +131,7 @@ def analyze_supervised(path: Path, *, tolerance: float, expected_unit: str | Non
     except (OSError, ValueError, TypeError, KeyError, AttributeError, RecursionError) as exc:
         reason = {'failure': 'worker_start_or_result', 'exception_type': type(exc).__name__}
     if reason is not None:
+        geometry = None
         report = _new_report(path, tolerance, expected_unit)
         report['input']['sha256'] = before_hash
         # A failed worker established no stable analyzed snapshot. Even matching
@@ -130,4 +145,14 @@ def analyze_supervised(path: Path, *, tolerance: float, expected_unit: str | Non
         'mode': 'subprocess', 'wall_clock_timeout_seconds': timeout,
         'hard_memory_limit': False, 'hard_cpu_limit': False, 'sandboxed': False,
     }
-    return report
+    return report, geometry
+
+
+def analyze_supervised(path: Path, *, tolerance: float, expected_unit: str | None, timeout: float) -> dict:
+    """Existing report-only API/worker protocol; no display payload is requested."""
+    return _analyze_supervised(path, tolerance=tolerance, expected_unit=expected_unit, timeout=timeout)[0]
+
+
+def analyze_visual_supervised(path: Path, *, tolerance: float, expected_unit: str | None, timeout: float) -> tuple[dict, dict | None]:
+    """Capture bounded display geometry in the same worker/snapshot as checks."""
+    return _analyze_supervised(path, tolerance=tolerance, expected_unit=expected_unit, timeout=timeout, include_geometry=True)

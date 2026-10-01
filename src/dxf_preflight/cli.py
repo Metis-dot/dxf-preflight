@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from itertools import combinations
 import json
 import math
 import os
@@ -11,7 +12,8 @@ import tempfile
 
 from . import __version__
 from .core import EXPECTED_UNITS
-from .supervisor import DEFAULT_TIMEOUT_SECONDS, analyze_supervised
+from .supervisor import DEFAULT_TIMEOUT_SECONDS, analyze_supervised, analyze_visual_supervised
+from .visual import render_html
 
 EXIT_CODES = {"limited_checks_clear": 0, "issues_found": 1, "incomplete": 2, "unreadable": 3}
 
@@ -132,16 +134,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--format", choices=["text", "json"], default="text", help="stdout format")
     parser.add_argument("--json-report", type=Path, help="Optional JSON output file; parent folder must exist")
     parser.add_argument("--text-report", type=Path, help="Optional human-readable output file; parent folder must exist")
+    parser.add_argument("--html-report", type=Path, help="Optional bounded offline HTML/SVG supported-geometry overview; parent folder must exist. No new checks or production approval")
     args = parser.parse_args(argv)
-    outputs = [p for p in (args.json_report, args.text_report) if p is not None]
+    outputs = [p for p in (args.json_report, args.text_report, args.html_report) if p is not None]
     try:
         if any(_same_path(args.input, output) for output in outputs):
             parser.error("a report output cannot overwrite or alias the input DXF")
-        if len(outputs) == 2 and _same_path(*outputs):
-            parser.error("JSON and text outputs must have different paths")
+        if any(_same_path(a, b) for a, b in combinations(outputs, 2)):
+            parser.error("report outputs must have different paths")
     except (OSError, RuntimeError) as exc:
         parser.error(f"unable to validate report paths: {exc}")
-    report = analyze_supervised(args.input, tolerance=args.tolerance, expected_unit=args.expected_unit, timeout=args.timeout)
+    geometry = None
+    if args.html_report:
+        report, geometry = analyze_visual_supervised(args.input, tolerance=args.tolerance, expected_unit=args.expected_unit, timeout=args.timeout)
+    else:
+        report = analyze_supervised(args.input, tolerance=args.tolerance, expected_unit=args.expected_unit, timeout=args.timeout)
     text = render_text(report)
     json_text = json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True, allow_nan=False) + "\n"
     written = []
@@ -150,14 +157,17 @@ def main(argv: list[str] | None = None) -> int:
         for output in outputs:
             if _same_path(args.input, output):
                 parser.error("a report output now aliases the input DXF")
-        if len(outputs) == 2 and _same_path(*outputs):
-            parser.error("JSON and text outputs now alias each other")
+        if any(_same_path(a, b) for a, b in combinations(outputs, 2)):
+            parser.error("report outputs now alias each other")
         if args.json_report:
             _atomic_write(args.json_report, json_text)
             written.append(str(args.json_report))
         if args.text_report:
             _atomic_write(args.text_report, text)
             written.append(str(args.text_report))
+        if args.html_report:
+            _atomic_write(args.html_report, render_html(report, geometry))
+            written.append(str(args.html_report))
     except (OSError, RuntimeError) as exc:
         completed = "; already written: " + ", ".join(written) if written else "; no requested report was written"
         parser.exit(4, f"Report write failed: {exc}{completed}\n")
