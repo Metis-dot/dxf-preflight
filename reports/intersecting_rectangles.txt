@@ -1,0 +1,33 @@
+DXF Preflight prototype v0.2.0
+MANUAL REVIEW REQUIRED: Manufacturing checks are incomplete; this report is never eligible as a production gate.
+Status: issues_found
+Input: fixtures/intersecting_rectangles.dxf
+SHA-256: b37b6ca06d19e2583e812d1784ff3ad7818876cf53fdef80bf741540cd0dd8c6
+Final source bytes match captured snapshot: True
+Endpoint tolerance: 1e-06 drawing units
+Declared units: Millimeters ($INSUNITS=4); expected: mm
+Entities: 5 scanned, 5 supported, 0 unsupported
+Segments: 8 extracted, 8 unique nondegenerate
+Check states: duplicates=checked, input_integrity=checked, input_read=checked, parsing=checked, scope=checked, segment_extraction=checked, segment_intersections=checked, topology=checked, units=checked
+
+Findings:
+  [INTER001] ERROR: Exact interior crossing between same-layer straight segments. Operation intent is not inferred.
+    handle 2F, segment 0 (zero-based), layer '0'
+    handle 33, segment 3 (zero-based), layer '0'
+    point (approximate display): [20.0, 0.0]
+    Next: locate these references/coordinates in the original CAD drawing and review intent; no automatic edit is advised.
+  [INTER001] ERROR: Exact interior crossing between same-layer straight segments. Operation intent is not inferred.
+    handle 33, segment 2 (zero-based), layer '0'
+    handle 30, segment 0 (zero-based), layer '0'
+    point (approximate display): [40.0, 10.0]
+    Next: locate these references/coordinates in the original CAD drawing and review intent; no automatic edit is advised.
+
+Not checked:
+  - Cross-layer crossings/overlaps, near-intersections, tolerance-based line-on-edge snapping
+  - Near-duplicate segments and operation/intent interpretation of coincident geometry
+  - Contour winding, nesting, hole/island meaning, bridges, minimum features
+  - Actual intended 1:1 scale or physical dimensions (INSUNITS is a declaration)
+  - Material, stock thickness, kerf, process tolerances, tooling and cut safety
+  - Complete DXF structural validity, CAD display styling and plot behavior
+
+Limited read-only metadata, endpoint-graph and same-layer straight-segment checks only. This is not a complete manufacturability review, cutting-safety assessment, toolpath validation, CAM certification, or supplier acceptance. Verify in CAD/CAM and with your fabricator before production.

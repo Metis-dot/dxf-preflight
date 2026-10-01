@@ -1,0 +1,1268 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DXF Preflight conservative report schema 1.1",
+  "description": "Local limited-check report; schema validation is never production approval. Additive evolution from 1.0. Unknown future fields may be ignored; unknown statuses/rules must not be treated as clear.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.1"
+    },
+    "tool": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "const": "dxf-preflight"
+        },
+        "version": {
+          "type": "string"
+        },
+        "ezdxf_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "ezdxf_version"
+      ],
+      "additionalProperties": true
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "unchanged_during_analysis": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "dxf_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "unchanged_during_analysis"
+      ],
+      "additionalProperties": true
+    },
+    "read_only": {
+      "const": true
+    },
+    "manual_review_required": {
+      "const": true
+    },
+    "gate_eligible": {
+      "const": false
+    },
+    "status": {
+      "enum": [
+        "limited_checks_clear",
+        "issues_found",
+        "incomplete",
+        "unreadable"
+      ]
+    },
+    "coverage_complete_for_declared_subset": {
+      "type": "boolean"
+    },
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "endpoint_tolerance": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "tolerance_unit": {
+          "const": "drawing units"
+        },
+        "expected_unit": {
+          "enum": [
+            "in",
+            "ft",
+            "mm",
+            "cm",
+            "m",
+            null
+          ]
+        }
+      },
+      "required": [
+        "endpoint_tolerance",
+        "tolerance_unit",
+        "expected_unit"
+      ],
+      "additionalProperties": true
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "in_process",
+            "subprocess"
+          ]
+        },
+        "wall_clock_timeout_seconds": {
+          "anyOf": [
+            {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hard_memory_limit": {
+          "const": false
+        },
+        "hard_cpu_limit": {
+          "const": false
+        },
+        "sandboxed": {
+          "const": false
+        }
+      },
+      "required": [
+        "mode",
+        "wall_clock_timeout_seconds",
+        "hard_memory_limit",
+        "hard_cpu_limit",
+        "sandboxed"
+      ],
+      "additionalProperties": true
+    },
+    "checks": {
+      "type": "object",
+      "properties": {
+        "input_read": {
+          "enum": [
+            "checked",
+            "not_run",
+            "unknown"
+          ]
+        },
+        "parsing": {
+          "enum": [
+            "checked",
+            "not_run",
+            "unknown"
+          ]
+        },
+        "units": {
+          "enum": [
+            "checked",
+            "not_run",
+            "unknown"
+          ]
+        },
+        "scope": {
+          "enum": [
+            "checked",
+            "not_run",
+            "unknown"
+          ]
+        },
+        "segment_extraction": {
+          "enum": [
+            "checked",
+            "not_run",
+            "unknown"
+          ]
+        },
+        "duplicates": {
+          "enum": [
+            "checked",
+            "not_run",
+            "unknown"
+          ]
+        },
+        "topology": {
+          "enum": [
+            "checked",
+            "not_run",
+            "unknown"
+          ]
+        },
+        "segment_intersections": {
+          "enum": [
+            "checked",
+            "not_run",
+            "unknown"
+          ]
+        },
+        "input_integrity": {
+          "enum": [
+            "checked",
+            "not_run",
+            "unknown"
+          ]
+        }
+      },
+      "required": [
+        "input_read",
+        "parsing",
+        "units",
+        "scope",
+        "segment_extraction",
+        "duplicates",
+        "topology",
+        "segment_intersections",
+        "input_integrity"
+      ],
+      "additionalProperties": false
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "layout": {
+          "const": "modelspace"
+        },
+        "plane": {
+          "type": "string"
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "max_file_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_entities": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_segments": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_endpoint_comparisons": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_segment_pair_candidates": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_intersection_findings": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "max_file_bytes",
+            "max_entities",
+            "max_segments",
+            "max_endpoint_comparisons",
+            "max_segment_pair_candidates",
+            "max_intersection_findings"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "entities",
+        "layout",
+        "plane",
+        "limits"
+      ],
+      "additionalProperties": true
+    },
+    "disclaimer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "not_checked": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rule_id": {
+            "enum": [
+              "FILE001",
+              "FILE002",
+              "UNIT001",
+              "UNIT002",
+              "SCOPE001",
+              "SCOPE002",
+              "SCOPE003",
+              "SCOPE004",
+              "SCOPE005",
+              "SCOPE007",
+              "SCOPE008",
+              "SCOPE009",
+              "GEOM001",
+              "GEOM002",
+              "GEOM003",
+              "DUP001",
+              "TOPO001",
+              "TOPO002",
+              "TOPO003",
+              "TOPO004",
+              "LAYER001",
+              "INTER001",
+              "INTER002",
+              "INTER003"
+            ]
+          },
+          "severity": {
+            "enum": [
+              "blocker",
+              "error",
+              "warning"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "segments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "handle",
+                    "segment_index",
+                    "layer",
+                    "style",
+                    "operation_inferred"
+                  ],
+                  "properties": {
+                    "handle": {
+                      "type": "string"
+                    },
+                    "segment_index": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "layer": {
+                      "type": "string"
+                    },
+                    "style": {
+                      "type": "object"
+                    },
+                    "operation_inferred": {
+                      "const": false
+                    }
+                  }
+                }
+              },
+              "entity": {
+                "type": "object",
+                "required": [
+                  "handle",
+                  "segment_index",
+                  "layer",
+                  "style",
+                  "operation_inferred"
+                ],
+                "properties": {
+                  "handle": {
+                    "type": "string"
+                  },
+                  "segment_index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "layer": {
+                    "type": "string"
+                  },
+                  "style": {
+                    "type": "object"
+                  },
+                  "operation_inferred": {
+                    "const": false
+                  }
+                }
+              },
+              "endpoints": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "point",
+                    "entities"
+                  ],
+                  "properties": {
+                    "point": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": {
+                        "type": "number"
+                      }
+                    },
+                    "entities": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "handle",
+                          "segment_index",
+                          "layer",
+                          "style",
+                          "operation_inferred"
+                        ],
+                        "properties": {
+                          "handle": {
+                            "type": "string"
+                          },
+                          "segment_index": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "layer": {
+                            "type": "string"
+                          },
+                          "style": {
+                            "type": "object"
+                          },
+                          "operation_inferred": {
+                            "const": false
+                          }
+                        }
+                      }
+                    },
+                    "degree": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              },
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "point",
+                    "entities"
+                  ],
+                  "properties": {
+                    "point": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": {
+                        "type": "number"
+                      }
+                    },
+                    "entities": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "handle",
+                          "segment_index",
+                          "layer",
+                          "style",
+                          "operation_inferred"
+                        ],
+                        "properties": {
+                          "handle": {
+                            "type": "string"
+                          },
+                          "segment_index": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "layer": {
+                            "type": "string"
+                          },
+                          "style": {
+                            "type": "object"
+                          },
+                          "operation_inferred": {
+                            "const": false
+                          }
+                        }
+                      }
+                    },
+                    "degree": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              },
+              "start": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "end": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "point": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "point_is_approximate": {
+                "type": "boolean"
+              },
+              "contact_points": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "overlap_endpoints": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "clusters": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                }
+              },
+              "entity_type": {
+                "type": "string"
+              },
+              "handle": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "rule_id",
+          "severity",
+          "message",
+          "details"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "modelspace_entities": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "supported_entities": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unsupported_entities": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "extracted_segments": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unique_nondegenerate_segments": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "finding_counts": {
+          "type": "object",
+          "properties": {
+            "blocker": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "error": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "warning": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "blocker",
+            "error",
+            "warning"
+          ],
+          "additionalProperties": false
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "layer": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "checked",
+                  "incomplete"
+                ]
+              },
+              "unique_segments": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "layer",
+              "status",
+              "unique_segments"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "segment_intersections": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "checked",
+                "not_run",
+                "unknown"
+              ]
+            },
+            "x_overlap_candidate_pairs": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "exact_pair_tests": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "modelspace_entities",
+        "supported_entities",
+        "unsupported_entities",
+        "extracted_segments",
+        "unique_nondegenerate_segments",
+        "finding_counts",
+        "layers",
+        "segment_intersections"
+      ],
+      "additionalProperties": true
+    },
+    "units": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "const": "$INSUNITS"
+        },
+        "code": {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "raw_value_type": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "expected": {
+          "enum": [
+            "in",
+            "ft",
+            "mm",
+            "cm",
+            "m",
+            null
+          ]
+        },
+        "scaled_or_inferred": {
+          "const": false
+        }
+      },
+      "required": [
+        "source",
+        "code",
+        "raw_value_type",
+        "name",
+        "expected",
+        "scaled_or_inferred"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "schema_version",
+    "tool",
+    "input",
+    "read_only",
+    "manual_review_required",
+    "gate_eligible",
+    "status",
+    "coverage_complete_for_declared_subset",
+    "parameters",
+    "execution",
+    "checks",
+    "scope",
+    "disclaimer",
+    "not_checked",
+    "findings",
+    "summary"
+  ],
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "limited_checks_clear"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "units"
+        ],
+        "properties": {
+          "coverage_complete_for_declared_subset": {
+            "const": true
+          },
+          "findings": {
+            "maxItems": 0
+          },
+          "checks": {
+            "properties": {
+              "input_read": {
+                "const": "checked"
+              },
+              "parsing": {
+                "const": "checked"
+              },
+              "units": {
+                "const": "checked"
+              },
+              "scope": {
+                "const": "checked"
+              },
+              "segment_extraction": {
+                "const": "checked"
+              },
+              "duplicates": {
+                "const": "checked"
+              },
+              "topology": {
+                "const": "checked"
+              },
+              "segment_intersections": {
+                "const": "checked"
+              },
+              "input_integrity": {
+                "const": "checked"
+              }
+            }
+          },
+          "input": {
+            "properties": {
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "unchanged_during_analysis": {
+                "const": true
+              }
+            },
+            "required": [
+              "dxf_version"
+            ]
+          },
+          "summary": {
+            "properties": {
+              "finding_counts": {
+                "properties": {
+                  "blocker": {
+                    "const": 0
+                  },
+                  "error": {
+                    "const": 0
+                  },
+                  "warning": {
+                    "const": 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "incomplete",
+              "unreadable"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "coverage_complete_for_declared_subset": {
+            "const": false
+          },
+          "findings": {
+            "minItems": 1
+          },
+          "summary": {
+            "properties": {
+              "finding_counts": {
+                "properties": {
+                  "blocker": {
+                    "minimum": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "issues_found"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "coverage_complete_for_declared_subset": {
+            "const": true
+          },
+          "findings": {
+            "minItems": 1
+          },
+          "summary": {
+            "properties": {
+              "finding_counts": {
+                "properties": {
+                  "blocker": {
+                    "const": 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "execution": {
+            "properties": {
+              "mode": {
+                "const": "subprocess"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "execution": {
+            "properties": {
+              "wall_clock_timeout_seconds": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "limited_checks_clear"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "checks": {
+            "properties": {
+              "input_read": {
+                "const": "checked"
+              },
+              "parsing": {
+                "const": "checked"
+              },
+              "units": {
+                "const": "checked"
+              },
+              "scope": {
+                "const": "checked"
+              },
+              "segment_extraction": {
+                "const": "checked"
+              },
+              "duplicates": {
+                "const": "checked"
+              },
+              "topology": {
+                "const": "checked"
+              },
+              "segment_intersections": {
+                "const": "checked"
+              },
+              "input_integrity": {
+                "const": "checked"
+              }
+            }
+          },
+          "summary": {
+            "properties": {
+              "segment_intersections": {
+                "properties": {
+                  "status": {
+                    "const": "checked"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "issues_found"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "checks": {
+            "properties": {
+              "input_read": {
+                "const": "checked"
+              },
+              "parsing": {
+                "const": "checked"
+              },
+              "units": {
+                "const": "checked"
+              },
+              "scope": {
+                "const": "checked"
+              },
+              "segment_extraction": {
+                "const": "checked"
+              },
+              "duplicates": {
+                "const": "checked"
+              },
+              "topology": {
+                "const": "checked"
+              },
+              "segment_intersections": {
+                "const": "checked"
+              },
+              "input_integrity": {
+                "const": "checked"
+              }
+            }
+          },
+          "summary": {
+            "properties": {
+              "segment_intersections": {
+                "properties": {
+                  "status": {
+                    "const": "checked"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "incomplete",
+              "unreadable"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "findings": {
+            "contains": {
+              "properties": {
+                "severity": {
+                  "const": "blocker"
+                }
+              },
+              "required": [
+                "severity"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "checks": {
+            "properties": {
+              "segment_intersections": {
+                "const": "checked"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "summary": {
+            "properties": {
+              "segment_intersections": {
+                "properties": {
+                  "status": {
+                    "const": "checked"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "checks": {
+            "properties": {
+              "segment_intersections": {
+                "const": "not_run"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "summary": {
+            "properties": {
+              "segment_intersections": {
+                "properties": {
+                  "status": {
+                    "const": "not_run"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "checks": {
+            "properties": {
+              "segment_intersections": {
+                "const": "unknown"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "summary": {
+            "properties": {
+              "segment_intersections": {
+                "properties": {
+                  "status": {
+                    "const": "unknown"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "checks": {
+            "properties": {
+              "units": {
+                "const": "checked"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "units"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "checks": {
+            "properties": {
+              "parsing": {
+                "const": "checked"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "input": {
+            "required": [
+              "dxf_version"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "checks": {
+            "properties": {
+              "topology": {
+                "const": "checked"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "summary": {
+            "properties": {
+              "layers": {
+                "items": {
+                  "properties": {
+                    "status": {
+                      "const": "checked"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "checks": {
+            "properties": {
+              "input_integrity": {
+                "const": "checked"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "input": {
+            "properties": {
+              "unchanged_during_analysis": {
+                "const": true
+              },
+              "sha256": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

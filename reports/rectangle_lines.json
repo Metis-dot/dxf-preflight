@@ -1,0 +1,108 @@
+{
+  "checks": {
+    "duplicates": "checked",
+    "input_integrity": "checked",
+    "input_read": "checked",
+    "parsing": "checked",
+    "scope": "checked",
+    "segment_extraction": "checked",
+    "segment_intersections": "checked",
+    "topology": "checked",
+    "units": "checked"
+  },
+  "coverage_complete_for_declared_subset": true,
+  "disclaimer": "Limited read-only metadata, endpoint-graph and same-layer straight-segment checks only. This is not a complete manufacturability review, cutting-safety assessment, toolpath validation, CAM certification, or supplier acceptance. Verify in CAD/CAM and with your fabricator before production.",
+  "execution": {
+    "hard_cpu_limit": false,
+    "hard_memory_limit": false,
+    "mode": "in_process",
+    "sandboxed": false,
+    "wall_clock_timeout_seconds": null
+  },
+  "findings": [],
+  "gate_eligible": false,
+  "input": {
+    "dxf_version": "AC1024",
+    "path": "fixtures/rectangle_lines.dxf",
+    "sha256": "22e9ebb0c45e0764162bf3e850ffe61ebd912c0dbf3b443452176dfeea53274e",
+    "unchanged_during_analysis": true
+  },
+  "manual_review_required": true,
+  "not_checked": [
+    "Cross-layer crossings/overlaps, near-intersections, tolerance-based line-on-edge snapping",
+    "Near-duplicate segments and operation/intent interpretation of coincident geometry",
+    "Contour winding, nesting, hole/island meaning, bridges, minimum features",
+    "Actual intended 1:1 scale or physical dimensions (INSUNITS is a declaration)",
+    "Material, stock thickness, kerf, process tolerances, tooling and cut safety",
+    "Complete DXF structural validity, CAD display styling and plot behavior"
+  ],
+  "parameters": {
+    "endpoint_tolerance": 1e-06,
+    "expected_unit": "mm",
+    "tolerance_unit": "drawing units"
+  },
+  "read_only": true,
+  "schema_version": "1.1",
+  "scope": {
+    "entities": [
+      "2D LINE",
+      "zero-bulge, zero-width LWPOLYLINE"
+    ],
+    "layout": "modelspace",
+    "limits": {
+      "max_endpoint_comparisons": 1000000,
+      "max_entities": 20000,
+      "max_file_bytes": 33554432,
+      "max_intersection_findings": 256,
+      "max_segment_pair_candidates": 250000,
+      "max_segments": 10000
+    },
+    "plane": "exact WCS XY / default OCS, z=0"
+  },
+  "status": "limited_checks_clear",
+  "summary": {
+    "extracted_segments": 4,
+    "finding_counts": {
+      "blocker": 0,
+      "error": 0,
+      "warning": 0
+    },
+    "layers": [
+      {
+        "branch_node_count": 0,
+        "components": 1,
+        "degree_two_cycle_components": 1,
+        "endpoint_nodes": 4,
+        "layer": "0",
+        "open_endpoint_count": 0,
+        "status": "checked",
+        "unique_segments": 4
+      }
+    ],
+    "modelspace_entities": 4,
+    "segment_intersections": {
+      "arithmetic": "exact dyadic integer predicates on ezdxf-parsed binary float coordinates",
+      "coverage": "supported same-layer straight segments only",
+      "exact_pair_tests": 4,
+      "intersection_point_display": "approximate float coordinates; predicate classification is exact on parsed values",
+      "status": "checked",
+      "x_overlap_candidate_pairs": 5
+    },
+    "supported_entities": 4,
+    "unique_nondegenerate_segments": 4,
+    "unsupported_entities": 0
+  },
+  "tool": {
+    "ezdxf_version": "1.4.4",
+    "name": "dxf-preflight",
+    "version": "0.2.0"
+  },
+  "units": {
+    "code": 4,
+    "expected": "mm",
+    "name": "Millimeters",
+    "raw_value_type": "int",
+    "scaled_or_inferred": false,
+    "source": "$INSUNITS"
+  }
+}

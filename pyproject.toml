@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dxf-preflight-prototype"
+version = "0.2.0"
+description = "Conservative, local, read-only checks for a small 2D DXF subset"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = ["ezdxf==1.4.4", "jsonschema==4.25.1"]
+
+[project.optional-dependencies]
+test = ["pytest==8.4.2", "jsonschema==4.25.1"]
+
+[project.scripts]
+dxf-preflight = "dxf_preflight.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+dxf_preflight = ["report.schema.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,122 @@
+[
+  {
+    "fixture": "block_insert.dxf",
+    "status": "incomplete",
+    "rule_ids": [
+      "SCOPE001",
+      "SCOPE005"
+    ],
+    "sha256": "9b3f875d269400c5a2fe11f11154c7bd6a9c1c666751b0e9908739c5a87eae7b"
+  },
+  {
+    "fixture": "bulged_polyline.dxf",
+    "status": "incomplete",
+    "rule_ids": [
+      "GEOM003",
+      "SCOPE003"
+    ],
+    "sha256": "f1102bfb55bb8c20b246ffc1be275fb80326ac7b5d0ea6d4d6ad54b7313203d2"
+  },
+  {
+    "fixture": "collinear_overlap.dxf",
+    "status": "issues_found",
+    "rule_ids": [
+      "INTER003",
+      "TOPO001"
+    ],
+    "sha256": "8bfed6180d0a89e817ac0e34fa4d79fcbe811e731a740311e5feb34861ca134c"
+  },
+  {
+    "fixture": "duplicate_reverse.dxf",
+    "status": "issues_found",
+    "rule_ids": [
+      "DUP001"
+    ],
+    "sha256": "49ac92ab5643f9a8e6482c88370ce827c5e4d9640370f525c172ee6c340ad6f7"
+  },
+  {
+    "fixture": "interior_endpoint_contact.dxf",
+    "status": "issues_found",
+    "rule_ids": [
+      "INTER002"
+    ],
+    "sha256": "aa84da0d03b26f305fab8de915a9a92e762b5c5e8454d62ad4987b1514acb481"
+  },
+  {
+    "fixture": "intersecting_rectangles.dxf",
+    "status": "issues_found",
+    "rule_ids": [
+      "INTER001"
+    ],
+    "sha256": "b37b6ca06d19e2583e812d1784ff3ad7818876cf53fdef80bf741540cd0dd8c6"
+  },
+  {
+    "fixture": "non_xy_line.dxf",
+    "status": "incomplete",
+    "rule_ids": [
+      "SCOPE002"
+    ],
+    "sha256": "dd36f1967f38b762a33f14b3dc0e696099749cab2dd1db779ecc11024cb2f51e"
+  },
+  {
+    "fixture": "open_chain.dxf",
+    "status": "issues_found",
+    "rule_ids": [
+      "TOPO001"
+    ],
+    "sha256": "05d7f3e2a1c68fbf252406d0619820a734736f3fa6d31f80c5161aed47ef9d7a"
+  },
+  {
+    "fixture": "parallel_disjoint.dxf",
+    "status": "issues_found",
+    "rule_ids": [
+      "TOPO003"
+    ],
+    "sha256": "d0a0a2dafcc1e44fb28159fca04c8410e2883d4f1b145efe9061143e02f5c01a"
+  },
+  {
+    "fixture": "rectangle_lines.dxf",
+    "status": "limited_checks_clear",
+    "rule_ids": [],
+    "sha256": "22e9ebb0c45e0764162bf3e850ffe61ebd912c0dbf3b443452176dfeea53274e"
+  },
+  {
+    "fixture": "rectangle_polyline.dxf",
+    "status": "limited_checks_clear",
+    "rule_ids": [],
+    "sha256": "afba21b065255e11e54e781b6eb3056a6e58c3a40e5513ba245841611e7b2e0c"
+  },
+  {
+    "fixture": "self_crossing.dxf",
+    "status": "issues_found",
+    "rule_ids": [
+      "INTER001"
+    ],
+    "sha256": "2bdb4496e7f551ad500663945bb4cf4de89ce657186cc439248d9750ab3456c2"
+  },
+  {
+    "fixture": "tolerance_gap.dxf",
+    "status": "issues_found",
+    "rule_ids": [
+      "INTER002",
+      "TOPO003"
+    ],
+    "sha256": "dad8b257ae648a73755010f750390b21cae3f5335f3d59e9cb8354207cbdabf1"
+  },
+  {
+    "fixture": "unitless.dxf",
+    "status": "incomplete",
+    "rule_ids": [
+      "UNIT001"
+    ],
+    "sha256": "19adf7b8cae9a36787e6239e40ab96dfaa7f2ec953db8f0f8edb7b08f5bf93b2"
+  },
+  {
+    "fixture": "unsupported_arc.dxf",
+    "status": "incomplete",
+    "rule_ids": [
+      "SCOPE001"
+    ],
+    "sha256": "5641002f0b7027e37e28c1700a02c98da84e38f2f1a0576d80c9511ca214c1b4"
+  }
+]

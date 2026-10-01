@@ -1,0 +1,34 @@
+DXF Preflight prototype v0.2.0
+MANUAL REVIEW REQUIRED: Manufacturing checks are incomplete; this report is never eligible as a production gate.
+Status: issues_found
+Input: fixtures/collinear_overlap.dxf
+SHA-256: 8bfed6180d0a89e817ac0e34fa4d79fcbe811e731a740311e5feb34861ca134c
+Final source bytes match captured snapshot: True
+Endpoint tolerance: 1e-06 drawing units
+Declared units: Millimeters ($INSUNITS=4); expected: mm
+Entities: 2 scanned, 2 supported, 0 unsupported
+Segments: 2 extracted, 2 unique nondegenerate
+Check states: duplicates=checked, input_integrity=checked, input_read=checked, parsing=checked, scope=checked, segment_extraction=checked, segment_intersections=checked, topology=checked, units=checked
+
+Findings:
+  [TOPO001] ERROR: Open-chain endpoints found in the supported endpoint graph.
+    At [0.0, 0.0]: handle 2F, segment 0 (zero-based), layer '0'
+    At [20.0, 0.0]: handle 30, segment 0 (zero-based), layer '0'
+    At [40.0, 0.0]: handle 2F, segment 0 (zero-based), layer '0'
+    At [60.0, 0.0]: handle 30, segment 0 (zero-based), layer '0'
+    Next: locate these references/coordinates in the original CAD drawing and review intent; no automatic edit is advised.
+  [INTER003] ERROR: Exact positive-length collinear overlap between same-layer segments. Operation intent is not inferred.
+    handle 2F, segment 0 (zero-based), layer '0'
+    handle 30, segment 0 (zero-based), layer '0'
+    overlap_endpoints: [[20.0, 0.0], [40.0, 0.0]]
+    Next: locate these references/coordinates in the original CAD drawing and review intent; no automatic edit is advised.
+
+Not checked:
+  - Cross-layer crossings/overlaps, near-intersections, tolerance-based line-on-edge snapping
+  - Near-duplicate segments and operation/intent interpretation of coincident geometry
+  - Contour winding, nesting, hole/island meaning, bridges, minimum features
+  - Actual intended 1:1 scale or physical dimensions (INSUNITS is a declaration)
+  - Material, stock thickness, kerf, process tolerances, tooling and cut safety
+  - Complete DXF structural validity, CAD display styling and plot behavior
+
+Limited read-only metadata, endpoint-graph and same-layer straight-segment checks only. This is not a complete manufacturability review, cutting-safety assessment, toolpath validation, CAM certification, or supplier acceptance. Verify in CAD/CAM and with your fabricator before production.

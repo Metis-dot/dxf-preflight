@@ -1,0 +1,30 @@
+DXF Preflight prototype v0.2.0
+MANUAL REVIEW REQUIRED: Manufacturing checks are incomplete; this report is never eligible as a production gate.
+Status: incomplete
+Input: fixtures/bulged_polyline.dxf
+SHA-256: f1102bfb55bb8c20b246ffc1be275fb80326ac7b5d0ea6d4d6ad54b7313203d2
+Final source bytes match captured snapshot: True
+Endpoint tolerance: 1e-06 drawing units
+Declared units: Millimeters ($INSUNITS=4); expected: mm
+Entities: 1 scanned, 0 supported, 1 unsupported
+Segments: 0 extracted, 0 unique nondegenerate
+Check states: duplicates=checked, input_integrity=checked, input_read=checked, parsing=checked, scope=checked, segment_extraction=unknown, segment_intersections=checked, topology=checked, units=checked
+
+Findings:
+  [SCOPE003] BLOCKER: LWPOLYLINE bulge is unsupported; no arc flattening.
+    entity_type: LWPOLYLINE
+    handle: 2F
+    layer: 0
+    Next: locate these references/coordinates in the original CAD drawing and review intent; no automatic edit is advised.
+  [GEOM003] ERROR: No supported line segments were extracted.
+    Next: locate these references/coordinates in the original CAD drawing and review intent; no automatic edit is advised.
+
+Not checked:
+  - Cross-layer crossings/overlaps, near-intersections, tolerance-based line-on-edge snapping
+  - Near-duplicate segments and operation/intent interpretation of coincident geometry
+  - Contour winding, nesting, hole/island meaning, bridges, minimum features
+  - Actual intended 1:1 scale or physical dimensions (INSUNITS is a declaration)
+  - Material, stock thickness, kerf, process tolerances, tooling and cut safety
+  - Complete DXF structural validity, CAD display styling and plot behavior
+
+Limited read-only metadata, endpoint-graph and same-layer straight-segment checks only. This is not a complete manufacturability review, cutting-safety assessment, toolpath validation, CAM certification, or supplier acceptance. Verify in CAD/CAM and with your fabricator before production.
