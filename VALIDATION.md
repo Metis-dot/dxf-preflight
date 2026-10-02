@@ -1,5 +1,72 @@
 # v0.2 trial validation record
 
+## Local combined HTML/curve checkpoint, 2026-10-02 UTC
+
+This checkpoint combines offline HTML head `35c7a92` and measurement-only curve
+head `5934cd0`, both originally based on main `21b1824`, with a text-only HTML
+measurement-summary reconciliation and 26 original integration regressions.
+It records a local proposed combination, not standalone-branch results, remote
+CI, a release, browser visual verification or manufacturing approval. Package
+0.2.0 and additive report schema 1.1 are unchanged. Only original synthetic
+drawings were used, on Python 3.12.14 / Linux x86_64.
+
+- The two feature patches applied together without conflicts; the unmodified
+  combination passed **355 tests**
+- Reconciled source suite: **381 passed in 17.34 seconds**. An independently
+  extracted sdist passed **381 tests in 19.04 seconds**
+- Source and extracted-sdist `compileall -q src scripts tests`, plus
+  `git diff --check`: passed
+- Wheel and sdist built with build 1.3.0, setuptools 80.9.0 and wheel 0.45.1
+- The wheel was installed non-editably into a new venv with system packages
+  disabled. Existing pinned dependency files from the earlier isolated venv
+  were copied, rather than newly downloaded or resolved. `pip check` passed
+- Installed imports resolved to that venv's `site-packages`. All **19 fixtures**
+  ran through the installed console outside the checkout with `PYTHONPATH`
+  removed; statuses/exits were expected, JSON validated against the packaged
+  schema, source hashes matched and source bytes remained unchanged
+- For all **19 normally completed fixture runs**, requesting HTML preserved
+  the exact JSON stdout and exit code compared with not requesting HTML.
+  Requested JSON/text outputs agreed with stdout and the text renderer. The
+  installed module entrypoint also passed with expected exit 2 on measured curves
+- All **19** direct reports matched the curve-feature report exactly. All
+  **15** original-baseline analysis results retained their existing values and
+  semantics after removing the documented additive fields and restoring the
+  changed disclaimer/not-checked/curve-exclusion wording
+- All **15** historical schema-1.1 reports without the optional curve field
+  validated against the current schema. All **19** extended reports also
+  validated against the baseline schema, which permits additive fields
+- All **19** HTML outputs passed static HTML/SVG parsing, unique-ID/internal
+  fragment-target checks and no-script/external-resource checks. Only supported
+  straight segments were drawn; curve findings received no invented plotted
+  shapes or locations. SVG circles were finding markers, not DXF circles
+
+The reconciliation exposes measurement state, scanned/measured/skipped counts
+and budget as HTML text. Values remain approximate drawing-unit values in
+JSON/text. It adds no measurement, geometry, worker payload, JSON field or
+analysis check. The 26 regressions cover the 19 fixtures, valid curve-only
+inputs, rejected radius/plane/equal angles, measurement/scan budgets,
+unreadable/failed workers and absent historical fields.
+
+**Parity above applies to normally completed worker runs.** Requesting HTML
+adds capture/serialization work inside the worker deadline and can change
+whether a tight deadline is reached; statuses and exit codes under such a
+deadline need not match a no-HTML run. Parent-side validation, rendering and
+writing remain outside that deadline; there is no total-CLI time guarantee or
+hard memory/CPU sandbox.
+
+**Browser rendering, responsive layout, actual fragment clicking and print QA
+remain unverified.** Static structural checks do not establish those results.
+No browser-policy bypass or report publication was attempted. No real customer
+geometry, external CAD interoperability, macOS/Windows or Python version other
+than 3.12 was tested.
+
+Curves retain SCOPE001/incomplete even when their measurement state is checked.
+Their duplicates, intersections, connectivity and closed-contour classification
+remain not run; no drawing perimeter or production clearance is inferred.
+Every report retains `manual_review_required: true`, `gate_eligible: false`.
+The original source-integrity/race limitations and bounded display caps remain.
+Earlier validation sections below are historical individual-feature checkpoints.
+
 ## Local measurement-only development checkpoint, 2026-10-02 UTC
 
 This increment is based on public main `21b1824`, separately from the offline

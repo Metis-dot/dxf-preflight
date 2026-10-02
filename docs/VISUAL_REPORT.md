@@ -45,6 +45,19 @@ remaining incomplete. Omitted ARC, INSERT, block, bulge, width, 3D or other
 unsupported geometry is not cleared. Every status requires manual CAD/CAM
 review; `gate_eligible` remains false. The preview adds no manufacturing checks.**
 
+### Measurement-only curves in combined reports
+
+The HTML text summarizes the separate CIRCLE/ARC measurement state and
+scanned/measured/skipped counts, with the report's curve measurement budget.
+Approximate drawing-unit values remain in JSON/text; curves are never plotted.
+Their duplicate, intersection, connectivity and closed-contour checks remain
+not run, and SCOPE001 still makes the overall report incomplete. Rejected
+attributes, unsupported planes, numeric range limits, measurement budgets or
+an unfinished entity scan leave measurement coverage unknown. A checked
+measurement state does not classify a contour or establish a drawing perimeter.
+Historical schema-1.1 reports without the optional measurement field say the
+measurements are unavailable, rather than inferring a checked empty population.
+
 ## Display limits
 
 Display caps do not alter analysis budgets, checks, statuses or exit codes:

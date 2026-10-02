@@ -175,6 +175,23 @@ p{line-height:1.5}.warning{background:#fff0d5;border-left:5px solid #a65400;padd
 """
 
 
+def _curve_summary(report: dict) -> str:
+    """Reconcile the optional measurement extension without plotting curves."""
+    curves = report["summary"].get("curve_measurements")
+    if curves is None:
+        return '<h2>Curve measurements only</h2><p class="small">Curve measurements unavailable in this report; no checked or empty curve population is inferred.</p>'
+    limit = report["scope"]["limits"].get("max_curve_measurements", "unavailable")
+    scan_note = ' The unscanned remainder is unknown.' if report["checks"]["scope"] == "unknown" else ''
+    return ('<h2>Curve measurements only</h2>'
+            f'<p class="small">Curve measurement state: {_safe(curves["status"])}; '
+            f'{_safe(curves["scanned_curve_entities"])} scanned, {_safe(curves["measured_entities"])} measured, {_safe(curves["skipped_entities"])} skipped in the scanned population; all curve contour checks NOT RUN.</p>'
+            f'<p class="small">Curve measurement budget: first {_safe(limit)} scanned modelspace CIRCLE/ARC entities. '
+            'Approximate values in drawing units remain in JSON/text. Curves are never drawn in this overview. '
+            'A checked measurement state does not establish duplicates, intersections, connectivity, closure or a full-drawing perimeter. '
+            'Only exact XY/default-extrusion, zero-thickness curves with required attributes and resolved numeric range are measured. '
+            'Rejected curves, budget limits or an incomplete scan leave measurement coverage unknown.' + scan_note + '</p>')
+
+
 def render_html(report: dict, geometry: dict | None) -> str:
     """Render bounded SVG and locators; never reads a filename or external URL."""
     geometry = validate_geometry(geometry, report)
@@ -275,6 +292,6 @@ def render_html(report: dict, geometry: dict | None) -> str:
             '</section></div><section class="panel" style="margin-top:20px"><h2>Check states and limits</h2><div class="checks">' +
             '<br>'.join(f'{_safe(name)}: {_safe(state)}' for name, state in report["checks"].items()) + '</div>'
             '<p class="small">A check state of checked means executed within its declared population. Findings and overall status retain their original meaning. The preview does not add any checks. Display limits: 2,000 segments, 256 findings, 512 point markers, 24 locators per finding; strings longer than 256 characters are shortened; at most 64 not-checked entries are shown. Full report details remain in JSON.</p>'
-            '<h2>Not checked</h2><ul>' + ''.join(f'<li>{_safe(item)}</li>' for item in report["not_checked"][:MAX_NOT_CHECKED_ITEMS]) + '</ul>' +
+            + _curve_summary(report) + '<h2>Not checked</h2><ul>' + ''.join(f'<li>{_safe(item)}</li>' for item in report["not_checked"][:MAX_NOT_CHECKED_ITEMS]) + '</ul>' +
             ('<p class="small">Additional not-checked entries are omitted; see JSON.</p>' if len(report["not_checked"]) > MAX_NOT_CHECKED_ITEMS else '') + '</section></main>'
             f'<footer class="small break">{_safe(report["disclaimer"])}<p>Offline file · no scripts, network resources, uploads or repairs. Reports expose drawing metadata and geometry; keep them private.</p></footer></body></html>\n')
