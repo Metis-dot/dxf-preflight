@@ -27,6 +27,43 @@
     "sha256": "8bfed6180d0a89e817ac0e34fa4d79fcbe811e731a740311e5feb34861ca134c"
   },
   {
+    "fixture": "curve_equal_angles.dxf",
+    "status": "incomplete",
+    "rule_ids": [
+      "GEOM002",
+      "GEOM003",
+      "SCOPE001"
+    ],
+    "sha256": "527bdd2fa67d4220f993a18641836bb09f1569d8d024ba5fe5074d2f403a0390"
+  },
+  {
+    "fixture": "curve_measurements.dxf",
+    "status": "incomplete",
+    "rule_ids": [
+      "SCOPE001"
+    ],
+    "sha256": "81b7b737ba454e4348b4fa4374c585845cecb7e1c84a8c72718575b6dee35330"
+  },
+  {
+    "fixture": "curve_rejected_ocs.dxf",
+    "status": "incomplete",
+    "rule_ids": [
+      "GEOM003",
+      "SCOPE001",
+      "SCOPE002"
+    ],
+    "sha256": "f8f55ce49a40319a24b657dd6a2d57bfab60b107876b946664aec3a1f429fdd0"
+  },
+  {
+    "fixture": "curve_wrapped_arc.dxf",
+    "status": "incomplete",
+    "rule_ids": [
+      "GEOM003",
+      "SCOPE001"
+    ],
+    "sha256": "a9ee0f2d0b82507656de54f0736e9119a649e5605010403ffe985ba82b14ddad"
+  },
+  {
     "fixture": "duplicate_reverse.dxf",
     "status": "issues_found",
     "rule_ids": [

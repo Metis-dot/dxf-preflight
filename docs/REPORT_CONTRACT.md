@@ -21,6 +21,35 @@ an empty findings array, `checked`, a degree-two cycle, or declared units with
 production approval. Stable rule IDs are described in [RULES.md](RULES.md).
 A changed meaning or removed field requires a future major schema version.
 
+### Optional measurement-only extension
+
+`summary.curve_measurements` is an additive optional schema-1.1 field. Historical
+1.1 reports without it remain valid and mean no curve measurements are available;
+they must not be read as an empty, checked curve population. Current analyzer
+reports always include it. The existing nine `checks` keys and straight-segment
+population semantics are unchanged. `scope.measurement_only_entities` and
+`scope.limits.max_curve_measurements` describe the separate measurement scope.
+
+The object has `status` (checked/not_run/unknown), `unit: drawing units`, a
+measurement method, `contour_checks: not_run`, scanned/measured/skipped counts,
+and per-entity `measurements`. Measured plus skipped equals the scanned count;
+the number of records equals measured. A completed scan with zero skipped
+curves is checked, including zero curves. Rejected curves, a measurement budget
+limit or scan truncation are unknown. Missing input is not_run; worker failure
+is unknown with no fabricated measurements. Current worker validation also
+rejects contradictory counts/state, inverted bounds or any measured curve
+without its SCOPE001 contour-exclusion blocker.
+
+Each record contains entity type/handle/layer/style, `operation_inferred: false`,
+center, radius, length, and bounds with `minimum`/`maximum` XY coordinate pairs.
+`length_is_approximate` and `bounds_are_approximate` are always true. ARC adds
+original and normalized start/end angles, a strictly positive counterclockwise
+sweep below 360 degrees, start/end XY points and `endpoints_are_approximate: true`.
+These approximate display values are not interval enclosures, topology proof or
+a full-drawing perimeter. Each measured curve remains unsupported for the
+straight-segment checks and makes the overall report incomplete. See
+[measurement eligibility and numeric limits](REFERENCE.md#standalone-circlearc-measurements-only).
+
 ## Individual check states
 
 - `checked`: the named check completed on its declared population. It can find

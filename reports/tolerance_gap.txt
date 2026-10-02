@@ -21,6 +21,7 @@ Findings:
     Next: locate these references/coordinates in the original CAD drawing and review intent; no automatic edit is advised.
 
 Not checked:
+  - Curve duplicates, intersections, connectivity and closed-contour classification (CIRCLE/ARC measurements only)
   - Cross-layer crossings/overlaps, near-intersections, tolerance-based line-on-edge snapping
   - Near-duplicate segments and operation/intent interpretation of coincident geometry
   - Contour winding, nesting, hole/island meaning, bridges, minimum features
@@ -28,4 +29,4 @@ Not checked:
   - Material, stock thickness, kerf, process tolerances, tooling and cut safety
   - Complete DXF structural validity, CAD display styling and plot behavior
 
-Limited read-only metadata, endpoint-graph and same-layer straight-segment checks only. This is not a complete manufacturability review, cutting-safety assessment, toolpath validation, CAM certification, or supplier acceptance. Verify in CAD/CAM and with your fabricator before production.
+Limited read-only metadata, endpoint-graph, same-layer straight-segment checks and measurement-only curves. This is not a complete manufacturability review, cutting-safety assessment, toolpath validation, CAM certification, or supplier acceptance. Verify in CAD/CAM and with your fabricator before production.

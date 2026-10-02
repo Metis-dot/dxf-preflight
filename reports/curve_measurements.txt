@@ -1,0 +1,36 @@
+DXF Preflight prototype v0.2.0
+MANUAL REVIEW REQUIRED: Manufacturing checks are incomplete; this report is never eligible as a production gate.
+Status: incomplete
+Input: fixtures/curve_measurements.dxf
+SHA-256: 81b7b737ba454e4348b4fa4374c585845cecb7e1c84a8c72718575b6dee35330
+Final source bytes match captured snapshot: True
+Endpoint tolerance: 1e-06 drawing units
+Declared units: Millimeters ($INSUNITS=4); expected: mm
+Entities: 3 scanned, 1 supported, 2 unsupported
+Segments: 4 extracted, 4 unique nondegenerate
+Curve measurements only: checked, 2 measured, 0 skipped in scanned population; all curve contour checks NOT RUN
+  CIRCLE handle 30, layer 'ETCH': radius 3.0, approximate length 18.84955592153876 drawing units
+    Approximate XY bounds: [57.0, 2.0] to [63.0, 8.0]
+  ARC handle 31, layer 'ETCH': radius 4.0, approximate length 6.283185307179586 drawing units
+    Approximate XY bounds: [57.17157287525381, 17.82842712474619] to [62.82842712474619, 19.0]
+    Counterclockwise sweep: 90.0 degrees; approximate endpoints: [62.82842712474619, 17.82842712474619] to [57.17157287525381, 17.82842712474619]
+Check states: duplicates=checked, input_integrity=checked, input_read=checked, parsing=checked, scope=checked, segment_extraction=unknown, segment_intersections=checked, topology=checked, units=checked
+
+Findings:
+  [SCOPE001] BLOCKER: Unsupported ARC: 1 entities
+    Representative handles (1 of 1): 31; all findings remain in JSON
+    Next: inspect curve geometry and connectivity in CAD; measurement-only reporting does not check duplicates, intersections or closure.
+  [SCOPE001] BLOCKER: Unsupported CIRCLE: 1 entities
+    Representative handles (1 of 1): 30; all findings remain in JSON
+    Next: inspect curve geometry and connectivity in CAD; measurement-only reporting does not check duplicates, intersections or closure.
+
+Not checked:
+  - Curve duplicates, intersections, connectivity and closed-contour classification (CIRCLE/ARC measurements only)
+  - Cross-layer crossings/overlaps, near-intersections, tolerance-based line-on-edge snapping
+  - Near-duplicate segments and operation/intent interpretation of coincident geometry
+  - Contour winding, nesting, hole/island meaning, bridges, minimum features
+  - Actual intended 1:1 scale or physical dimensions (INSUNITS is a declaration)
+  - Material, stock thickness, kerf, process tolerances, tooling and cut safety
+  - Complete DXF structural validity, CAD display styling and plot behavior
+
+Limited read-only metadata, endpoint-graph, same-layer straight-segment checks and measurement-only curves. This is not a complete manufacturability review, cutting-safety assessment, toolpath validation, CAM certification, or supplier acceptance. Verify in CAD/CAM and with your fabricator before production.
