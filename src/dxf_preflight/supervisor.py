@@ -73,6 +73,22 @@ def _check_worker_result(report: object, request: dict | None = None) -> dict:
     counts = Counter(f['severity'] for f in report['findings'])
     if report['summary']['finding_counts'] != {key: counts[key] for key in ('blocker', 'error', 'warning')}:
         raise ValueError('Finding counts contradict actual findings')
+    curves = report['summary'].get('curve_measurements')
+    if curves is None:
+        raise ValueError('Current worker omitted its curve-measurement state')
+    scanned, measured, skipped = (curves[key] for key in ('scanned_curve_entities', 'measured_entities', 'skipped_entities'))
+    if measured != len(curves['measurements']) or measured + skipped != scanned or scanned > report['summary']['unsupported_entities'] or scanned > report['summary']['modelspace_entities']:
+        raise ValueError('Curve measurement counts contradict their population')
+    if curves['status'] == 'checked' and (skipped or report['checks']['scope'] != 'checked'):
+        raise ValueError('Curve measurements cannot be checked with skipped curves or a truncated scan')
+    if curves['status'] == 'not_run' and scanned:
+        raise ValueError('Curve measurements were reported without entering the check')
+    excluded = {(f['details'].get('handle'), f['details'].get('entity_type')) for f in report['findings'] if f['rule_id'] == 'SCOPE001' and f['severity'] == 'blocker'}
+    for curve in curves['measurements']:
+        if (curve['handle'], curve['entity_type']) not in excluded:
+            raise ValueError('A measured curve lacks its required contour-exclusion blocker')
+        if any(low > high for low, high in zip(curve['bounds']['minimum'], curve['bounds']['maximum'])):
+            raise ValueError('Curve bounds are inverted')
     original_status = report['status']
     original_coverage = report['coverage_complete_for_declared_subset']
     _finish(report, unreadable=original_status == 'unreadable')
@@ -139,6 +155,7 @@ def _analyze_supervised(path: Path, *, tolerance: float, expected_unit: str | No
         report['checks'] = {name: 'unknown' for name in report['checks']}
         report['checks']['input_read'] = 'checked' if before_hash else 'unknown'
         report['summary']['segment_intersections']['status'] = 'unknown'
+        report['summary']['curve_measurements']['status'] = 'unknown'
         _finding(report, rule, 'blocker', 'Analysis worker did not complete; no clear result is available.', **reason)
         _finish(report)
     report['execution'] = {

@@ -11,7 +11,7 @@
     "units": "checked"
   },
   "coverage_complete_for_declared_subset": false,
-  "disclaimer": "Limited read-only metadata, endpoint-graph and same-layer straight-segment checks only. This is not a complete manufacturability review, cutting-safety assessment, toolpath validation, CAM certification, or supplier acceptance. Verify in CAD/CAM and with your fabricator before production.",
+  "disclaimer": "Limited read-only metadata, endpoint-graph, same-layer straight-segment checks and measurement-only curves. This is not a complete manufacturability review, cutting-safety assessment, toolpath validation, CAM certification, or supplier acceptance. Verify in CAD/CAM and with your fabricator before production.",
   "execution": {
     "hard_cpu_limit": false,
     "hard_memory_limit": false,
@@ -39,6 +39,7 @@
   },
   "manual_review_required": true,
   "not_checked": [
+    "Curve duplicates, intersections, connectivity and closed-contour classification (CIRCLE/ARC measurements only)",
     "Cross-layer crossings/overlaps, near-intersections, tolerance-based line-on-edge snapping",
     "Near-duplicate segments and operation/intent interpretation of coincident geometry",
     "Contour winding, nesting, hole/island meaning, bridges, minimum features",
@@ -60,6 +61,7 @@
     ],
     "layout": "modelspace",
     "limits": {
+      "max_curve_measurements": 256,
       "max_endpoint_comparisons": 1000000,
       "max_entities": 20000,
       "max_file_bytes": 33554432,
@@ -67,10 +69,24 @@
       "max_segment_pair_candidates": 250000,
       "max_segments": 10000
     },
+    "measurement_only_entities": [
+      "2D CIRCLE",
+      "2D ARC"
+    ],
     "plane": "exact WCS XY / default OCS, z=0"
   },
   "status": "incomplete",
   "summary": {
+    "curve_measurements": {
+      "contour_checks": "not_run",
+      "measured_entities": 0,
+      "measurements": [],
+      "method": "analytic floating-point measurements, no tessellation",
+      "scanned_curve_entities": 0,
+      "skipped_entities": 0,
+      "status": "checked",
+      "unit": "drawing units"
+    },
     "extracted_segments": 4,
     "finding_counts": {
       "blocker": 1,

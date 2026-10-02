@@ -11,7 +11,7 @@
     "units": "checked"
   },
   "coverage_complete_for_declared_subset": false,
-  "disclaimer": "Limited read-only metadata, endpoint-graph and same-layer straight-segment checks only. This is not a complete manufacturability review, cutting-safety assessment, toolpath validation, CAM certification, or supplier acceptance. Verify in CAD/CAM and with your fabricator before production.",
+  "disclaimer": "Limited read-only metadata, endpoint-graph, same-layer straight-segment checks and measurement-only curves. This is not a complete manufacturability review, cutting-safety assessment, toolpath validation, CAM certification, or supplier acceptance. Verify in CAD/CAM and with your fabricator before production.",
   "execution": {
     "hard_cpu_limit": false,
     "hard_memory_limit": false,
@@ -25,7 +25,7 @@
         "entity_type": "ARC",
         "handle": "33"
       },
-      "message": "Unsupported modelspace entity.",
+      "message": "Curve is excluded from duplicate, intersection and contour checks; any measurements do not establish connectivity or closure.",
       "rule_id": "SCOPE001",
       "severity": "blocker"
     }
@@ -39,6 +39,7 @@
   },
   "manual_review_required": true,
   "not_checked": [
+    "Curve duplicates, intersections, connectivity and closed-contour classification (CIRCLE/ARC measurements only)",
     "Cross-layer crossings/overlaps, near-intersections, tolerance-based line-on-edge snapping",
     "Near-duplicate segments and operation/intent interpretation of coincident geometry",
     "Contour winding, nesting, hole/island meaning, bridges, minimum features",
@@ -60,6 +61,7 @@
     ],
     "layout": "modelspace",
     "limits": {
+      "max_curve_measurements": 256,
       "max_endpoint_comparisons": 1000000,
       "max_entities": 20000,
       "max_file_bytes": 33554432,
@@ -67,10 +69,73 @@
       "max_segment_pair_candidates": 250000,
       "max_segments": 10000
     },
+    "measurement_only_entities": [
+      "2D CIRCLE",
+      "2D ARC"
+    ],
     "plane": "exact WCS XY / default OCS, z=0"
   },
   "status": "incomplete",
   "summary": {
+    "curve_measurements": {
+      "contour_checks": "not_run",
+      "measured_entities": 1,
+      "measurements": [
+        {
+          "bounds": {
+            "maximum": [
+              65.0,
+              5.0
+            ],
+            "minimum": [
+              60.0,
+              0.0
+            ]
+          },
+          "bounds_are_approximate": true,
+          "center": [
+            60.0,
+            0.0
+          ],
+          "counterclockwise_sweep_degrees": 90.0,
+          "end": [
+            60.0,
+            5.0
+          ],
+          "end_angle_degrees": 90.0,
+          "endpoints_are_approximate": true,
+          "entity_type": "ARC",
+          "handle": "33",
+          "layer": "0",
+          "length": 7.853981633974483,
+          "length_is_approximate": true,
+          "normalized_end_angle_degrees": 90.0,
+          "normalized_start_angle_degrees": 0.0,
+          "operation_inferred": false,
+          "radius": 5.0,
+          "start": [
+            65.0,
+            0.0
+          ],
+          "start_angle_degrees": 0.0,
+          "style": {
+            "entity_color": 256,
+            "entity_linetype": "BYLAYER",
+            "entity_lineweight": -1,
+            "entity_true_color": null,
+            "layer_color": 7,
+            "layer_linetype": "Continuous",
+            "layer_lineweight": -3,
+            "layer_true_color": null
+          }
+        }
+      ],
+      "method": "analytic floating-point measurements, no tessellation",
+      "scanned_curve_entities": 1,
+      "skipped_entities": 0,
+      "status": "checked",
+      "unit": "drawing units"
+    },
     "extracted_segments": 4,
     "finding_counts": {
       "blocker": 1,

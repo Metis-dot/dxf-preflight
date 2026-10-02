@@ -14,6 +14,7 @@ import ezdxf
 from ezdxf import units
 
 from . import __version__
+from .curves import CurveMeasurementError, measure_curve
 from .intersections import inspect_intersections
 
 MAX_FILE_BYTES = 32 * 1024 * 1024
@@ -22,14 +23,16 @@ MAX_ENTITIES = 20_000
 MAX_COMPARISONS = 1_000_000
 MAX_SEGMENT_PAIR_CANDIDATES = 250_000
 MAX_INTERSECTION_FINDINGS = 256
+MAX_CURVE_MEASUREMENTS = 256
 EXPECTED_UNITS = {"in": 1, "ft": 2, "mm": 4, "cm": 5, "m": 6}
 DISCLAIMER = (
-    "Limited read-only metadata, endpoint-graph and same-layer straight-segment checks only. This is not a "
+    "Limited read-only metadata, endpoint-graph, same-layer straight-segment checks and measurement-only curves. This is not a "
     "complete manufacturability review, cutting-safety assessment, toolpath "
     "validation, CAM certification, or supplier acceptance. Verify in CAD/CAM "
     "and with your fabricator before production."
 )
 NOT_CHECKED = [
+    "Curve duplicates, intersections, connectivity and closed-contour classification (CIRCLE/ARC measurements only)",
     "Cross-layer crossings/overlaps, near-intersections, tolerance-based line-on-edge snapping",
     "Near-duplicate segments and operation/intent interpretation of coincident geometry",
     "Contour winding, nesting, hole/island meaning, bridges, minimum features",
@@ -65,7 +68,9 @@ def _finding(report: dict, rule: str, severity: str, message: str, **details) ->
 
 
 def _finish(report: dict, unreadable: bool = False) -> dict:
-    if not any(f["severity"] == "blocker" for f in report["findings"]) and any(state != "checked" for state in report["checks"].values()):
+    curves = report["summary"].get("curve_measurements")
+    unconfirmed = any(state != "checked" for state in report["checks"].values()) or (curves is not None and curves["status"] != "checked")
+    if not any(f["severity"] == "blocker" for f in report["findings"]) and unconfirmed:
         _finding(report, "SCOPE009", "blocker", "Required limited checks did not all complete; this report cannot be clear.")
     counts = Counter(f["severity"] for f in report["findings"])
     report["summary"]["finding_counts"] = {
@@ -90,35 +95,24 @@ def _new_report(path: Path, tolerance: float, expected_unit: str | None) -> dict
         "parameters": {"endpoint_tolerance": tolerance, "tolerance_unit": "drawing units", "expected_unit": expected_unit},
         "execution": {"mode": "in_process", "wall_clock_timeout_seconds": None, "hard_memory_limit": False, "hard_cpu_limit": False, "sandboxed": False},
         "checks": {name: "not_run" for name in ("input_read", "parsing", "units", "scope", "segment_extraction", "duplicates", "topology", "segment_intersections", "input_integrity")},
-        "scope": {"entities": ["2D LINE", "zero-bulge, zero-width LWPOLYLINE"], "layout": "modelspace", "plane": "exact WCS XY / default OCS, z=0", "limits": {"max_file_bytes": MAX_FILE_BYTES, "max_entities": MAX_ENTITIES, "max_segments": MAX_SEGMENTS, "max_endpoint_comparisons": MAX_COMPARISONS, "max_segment_pair_candidates": MAX_SEGMENT_PAIR_CANDIDATES, "max_intersection_findings": MAX_INTERSECTION_FINDINGS}},
+        "scope": {"entities": ["2D LINE", "zero-bulge, zero-width LWPOLYLINE"], "measurement_only_entities": ["2D CIRCLE", "2D ARC"], "layout": "modelspace", "plane": "exact WCS XY / default OCS, z=0", "limits": {"max_file_bytes": MAX_FILE_BYTES, "max_entities": MAX_ENTITIES, "max_segments": MAX_SEGMENTS, "max_endpoint_comparisons": MAX_COMPARISONS, "max_segment_pair_candidates": MAX_SEGMENT_PAIR_CANDIDATES, "max_intersection_findings": MAX_INTERSECTION_FINDINGS, "max_curve_measurements": MAX_CURVE_MEASUREMENTS}},
         "disclaimer": DISCLAIMER, "not_checked": NOT_CHECKED[:], "findings": [],
-        "summary": {"modelspace_entities": 0, "supported_entities": 0, "unsupported_entities": 0, "extracted_segments": 0, "unique_nondegenerate_segments": 0, "layers": [], "segment_intersections": {"status": "not_run"}},
+        "summary": {"modelspace_entities": 0, "supported_entities": 0, "unsupported_entities": 0, "extracted_segments": 0, "unique_nondegenerate_segments": 0, "layers": [], "segment_intersections": {"status": "not_run"}, "curve_measurements": {"status": "not_run", "unit": "drawing units", "method": "analytic floating-point measurements, no tessellation", "contour_checks": "not_run", "scanned_curve_entities": 0, "measured_entities": 0, "skipped_entities": 0, "measurements": []}},
     }
 
 
 def _segments(entity, report: dict) -> list[Segment] | None:
-    """Return None for unsupported geometry; never approximate arcs or OCS."""
+    """Extract straight segments only; curve measurements stay outside the graph."""
     kind = entity.dxftype()
     ref = {"handle": str(entity.dxf.get("handle", "?")), "entity_type": kind}
     if kind not in {"LINE", "LWPOLYLINE"}:
-        _finding(report, "SCOPE001", "blocker", "Unsupported modelspace entity.", **ref)
+        message = "Curve is excluded from duplicate, intersection and contour checks; any measurements do not establish connectivity or closure." if kind in {"CIRCLE", "ARC"} else "Unsupported modelspace entity."
+        _finding(report, "SCOPE001", "blocker", message, **ref)
+        if kind in {"CIRCLE", "ARC"}:
+            _measure_curve_entity(entity, report)
         return None
     layer = str(entity.dxf.get("layer", "0"))
-    style = {
-        "entity_color": entity.dxf.get("color", 256),
-        "entity_true_color": entity.dxf.get("true_color", None),
-        "entity_linetype": entity.dxf.get("linetype", "BYLAYER"),
-        "entity_lineweight": entity.dxf.get("lineweight", -1),
-    }
-    if entity.doc is not None and entity.doc.layers.has_entry(layer):
-        layer_entry = entity.doc.layers.get(layer)
-        style.update({
-            "layer_color": layer_entry.dxf.get("color", 7),
-            "layer_true_color": layer_entry.dxf.get("true_color", None),
-            "layer_linetype": layer_entry.dxf.get("linetype", "Continuous"),
-            "layer_lineweight": layer_entry.dxf.get("lineweight", -3),
-        })
-    style = {key: _json_metadata(value) for key, value in style.items()}
+    style = _entity_style(entity, layer)
     ref["layer"] = layer
     extrusion = tuple(float(v) for v in entity.dxf.get("extrusion", (0, 0, 1)))
     thickness = float(entity.dxf.get("thickness", 0))
@@ -171,6 +165,65 @@ def _segments(entity, report: dict) -> list[Segment] | None:
     if entity.closed:
         pairs.append((vertices[-1], vertices[0]))
     return [Segment(a, b, layer, ref["handle"], i, style) for i, (a, b) in enumerate(pairs)]
+
+
+def _entity_style(entity, layer: str) -> dict:
+    style = {
+        "entity_color": entity.dxf.get("color", 256),
+        "entity_true_color": entity.dxf.get("true_color", None),
+        "entity_linetype": entity.dxf.get("linetype", "BYLAYER"),
+        "entity_lineweight": entity.dxf.get("lineweight", -1),
+    }
+    if entity.doc is not None and entity.doc.layers.has_entry(layer):
+        layer_entry = entity.doc.layers.get(layer)
+        style.update({
+            "layer_color": layer_entry.dxf.get("color", 7),
+            "layer_true_color": layer_entry.dxf.get("true_color", None),
+            "layer_linetype": layer_entry.dxf.get("linetype", "Continuous"),
+            "layer_lineweight": layer_entry.dxf.get("lineweight", -3),
+        })
+    return {key: _json_metadata(value) for key, value in style.items()}
+
+
+def _measure_curve_entity(entity, report: dict) -> None:
+    summary = report["summary"]["curve_measurements"]
+    summary["scanned_curve_entities"] += 1
+    ref = {"handle": str(entity.dxf.get("handle", "?")), "entity_type": entity.dxftype()}
+    measurement = None
+    try:
+        if summary["scanned_curve_entities"] > MAX_CURVE_MEASUREMENTS:
+            if summary["scanned_curve_entities"] == MAX_CURVE_MEASUREMENTS + 1:
+                _finding(report, "SCOPE007", "blocker", "Curve measurement budget exceeded; remaining curves have no measurements.", limit=MAX_CURVE_MEASUREMENTS)
+            return
+        layer = str(entity.dxf.get("layer", "0"))
+        ref["layer"] = layer
+        required = ("center", "radius", "start_angle", "end_angle") if entity.dxftype() == "ARC" else ("center", "radius")
+        missing = [name for name in required if not entity.dxf.hasattr(name)]
+        if missing:
+            _finding(report, "SCOPE008", "blocker", "Required curve attributes are absent; parser defaults are not accepted as measurements.", **ref, missing_attributes=missing)
+            return
+        center = tuple(float(v) for v in entity.dxf.center)
+        extrusion = tuple(float(v) for v in entity.dxf.get("extrusion", (0, 0, 1)))
+        thickness = float(entity.dxf.get("thickness", 0))
+        if not all(math.isfinite(v) for v in (*center, *extrusion, thickness)):
+            raise CurveMeasurementError("GEOM001", "Non-finite curve coordinates or plane attributes; no measurement.")
+        if center[2] != 0.0 or extrusion != (0.0, 0.0, 1.0) or thickness != 0.0:
+            raise CurveMeasurementError("SCOPE002", "Curve is not exactly in WCS XY with default OCS and zero thickness; no transform or projection.")
+        kind = entity.dxftype()
+        candidate = measure_curve(kind, center[:2], float(entity.dxf.radius),
+                                    float(entity.dxf.start_angle) if kind == "ARC" else None,
+                                    float(entity.dxf.end_angle) if kind == "ARC" else None)
+        candidate.update({**ref, "style": _entity_style(entity, layer), "operation_inferred": False})
+        measurement = candidate
+        summary["measurements"].append(measurement)
+        summary["measured_entities"] += 1
+    except CurveMeasurementError as exc:
+        _finding(report, exc.rule, "blocker", str(exc), **ref)
+    except (ValueError, TypeError, AttributeError, IndexError, OverflowError) as exc:
+        _finding(report, "SCOPE008", "blocker", "Curve attributes could not be interpreted conservatively; no measurement.", **ref, exception_type=type(exc).__name__)
+    finally:
+        if measurement is None:
+            summary["skipped_entities"] += 1
 
 
 def _json_number(value: float):
@@ -394,6 +447,8 @@ def _analyze(path: str | Path, *, tolerance: float = 1e-6, expected_unit: str | 
             scan_complete = False
             break
     report["checks"]["scope"] = "checked" if scan_complete else "unknown"
+    curve_summary = report["summary"]["curve_measurements"]
+    curve_summary["status"] = "unknown" if not scan_complete or curve_summary["skipped_entities"] else "checked"
     report["checks"]["segment_extraction"] = "unknown" if not scan_complete or report["summary"]["unsupported_entities"] else "checked"
     report["summary"]["extracted_segments"] = len(segments)
     if _on_geometry is not None:

@@ -1,5 +1,51 @@
 # v0.2 trial validation record
 
+## Local measurement-only development checkpoint, 2026-10-02 UTC
+
+This increment is based on public main `21b1824`, separately from the offline
+HTML-report branch. It retains package version 0.2.0 and additive schema 1.1
+while awaiting review; it is not a new release or manufacturing approval.
+Only original invented geometry was used, with no customer files.
+
+- Unchanged main baseline: **189 passed in 12.65 seconds**
+- Final development source suite: **277 passed** (including 84 new curve tests
+  and four additional fixture-validation cases)
+- `compileall -q src scripts tests` and `git diff --check`: passed
+- Wheel built locally with build 1.3.0, setuptools 80.9.0, wheel 0.45.1
+- The wheel was installed into an independent temporary target with `--no-index
+  --no-deps`; the smoke run reused existing pinned dependencies from the earlier
+  isolated venv. This was not a fresh dependency-resolution/platform trial
+- Installed import was verified to resolve inside that target, outside this
+  source checkout. All **19 fixtures** through its console entrypoint validated
+  against the packaged schema, with expected statuses/exits, correct source
+  hashes and exact source bytes unchanged after analysis
+- Installed module entrypoint and requested JSON/text reports agreed for the
+  mixed circle/arc example. `pip check` found no broken requirements
+- A separate independent review ran 5,000 analytic/cardinal/wrapped-angle probes
+  and checked rejected transforms, budgets, partial scans and style failures
+- That review found parser defaults for absent required attributes could invent
+  measurements. Explicit presence checks fixed it; raw missing center-x,
+  center-y, radius and ARC-angle tags now have regression coverage. Missing
+  optional center-z remains valid zero; strict parsing rejects absent center-y
+
+The new tests cover translated circles, all quadrants, major/wrapped/negative
+and very large finite ARC angles, noncardinal extrema, deterministic dense
+sampling, non-finite/invalid radii, degenerate/equal angles, numeric overflow,
+underflow and coordinate collapse, exact plane/OCS/thickness rejection, no unit
+scaling, original-file preservation, missing required attributes, budget/scan
+coverage, worker failure, schema/transport contradictions and capped text output.
+Measurements never enter the straight-segment duplicate/intersection/endpoint
+graph. Every curve keeps SCOPE001/incomplete, manual review required, gate false.
+
+Bounds/endpoints/lengths are approximate display values, not interval-certified
+enclosures. No curve intersections/duplicates, mixed connectivity, closed-curve
+counts, whole-drawing perimeter or CAD interoperability/manufacturing trial was
+added. The prior time boundary, path guards and lack of an OS security sandbox
+are unchanged. No browser validation is involved in this JSON/text increment.
+
+The original v0.2 evidence below is historical and covers the earlier 15-fixture
+checkpoint; its curve limitations refer to that earlier implementation.
+
 Executed on 2026-10-01 UTC using **only original synthetic DXF fixtures**.
 This is a local, unpublished checkpoint, not factory/customer/supplier,
 malicious-input, security-sandbox, performance-SLA or market validation.

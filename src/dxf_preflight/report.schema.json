@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "DXF Preflight conservative report schema 1.1",
-  "description": "Local limited-check report; schema validation is never production approval. Additive evolution from 1.0. Unknown future fields may be ignored; unknown statuses/rules must not be treated as clear.",
+  "description": "Local limited-check report; schema validation is never production approval. Additive evolution from 1.0. Unknown future fields may be ignored; unknown statuses/rules must not be treated as clear. Optional curve_measurements adds display measurements only; historical 1.1 reports without it remain valid.",
   "type": "object",
   "properties": {
     "schema_version": {
@@ -694,6 +694,249 @@
             "status"
           ],
           "additionalProperties": true
+        },
+        "curve_measurements": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "checked",
+                "not_run",
+                "unknown"
+              ]
+            },
+            "unit": {
+              "const": "drawing units"
+            },
+            "method": {
+              "const": "analytic floating-point measurements, no tessellation"
+            },
+            "contour_checks": {
+              "const": "not_run"
+            },
+            "scanned_curve_entities": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "measured_entities": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 256
+            },
+            "skipped_entities": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "measurements": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "handle": {
+                    "type": "string"
+                  },
+                  "entity_type": {
+                    "enum": [
+                      "CIRCLE",
+                      "ARC"
+                    ]
+                  },
+                  "layer": {
+                    "type": "string"
+                  },
+                  "style": {
+                    "type": "object"
+                  },
+                  "operation_inferred": {
+                    "const": false
+                  },
+                  "center": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "radius": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "length": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "length_is_approximate": {
+                    "const": true
+                  },
+                  "bounds_are_approximate": {
+                    "const": true
+                  },
+                  "bounds": {
+                    "type": "object",
+                    "properties": {
+                      "minimum": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "items": {
+                          "type": "number"
+                        }
+                      },
+                      "maximum": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "items": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "required": [
+                      "minimum",
+                      "maximum"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "start_angle_degrees": {
+                    "type": "number"
+                  },
+                  "end_angle_degrees": {
+                    "type": "number"
+                  },
+                  "normalized_start_angle_degrees": {
+                    "type": "number",
+                    "minimum": 0,
+                    "exclusiveMaximum": 360
+                  },
+                  "normalized_end_angle_degrees": {
+                    "type": "number",
+                    "minimum": 0,
+                    "exclusiveMaximum": 360
+                  },
+                  "counterclockwise_sweep_degrees": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "exclusiveMaximum": 360
+                  },
+                  "start": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "end": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "endpoints_are_approximate": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "handle",
+                  "entity_type",
+                  "layer",
+                  "style",
+                  "operation_inferred",
+                  "center",
+                  "radius",
+                  "length",
+                  "length_is_approximate",
+                  "bounds_are_approximate",
+                  "bounds"
+                ],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "entity_type": {
+                          "const": "ARC"
+                        }
+                      }
+                    },
+                    "then": {
+                      "required": [
+                        "start_angle_degrees",
+                        "end_angle_degrees",
+                        "normalized_start_angle_degrees",
+                        "normalized_end_angle_degrees",
+                        "counterclockwise_sweep_degrees",
+                        "start",
+                        "end",
+                        "endpoints_are_approximate"
+                      ]
+                    },
+                    "else": {
+                      "not": {
+                        "anyOf": [
+                          {
+                            "required": [
+                              "start_angle_degrees"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "end_angle_degrees"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "normalized_start_angle_degrees"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "normalized_end_angle_degrees"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "counterclockwise_sweep_degrees"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "start"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "end"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "endpoints_are_approximate"
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              "maxItems": 256
+            }
+          },
+          "required": [
+            "status",
+            "unit",
+            "method",
+            "contour_checks",
+            "scanned_curve_entities",
+            "measured_entities",
+            "skipped_entities",
+            "measurements"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -1258,6 +1501,33 @@
               },
               "sha256": {
                 "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "limited_checks_clear"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "summary": {
+            "properties": {
+              "curve_measurements": {
+                "properties": {
+                  "status": {
+                    "const": "checked"
+                  },
+                  "scanned_curve_entities": {
+                    "const": 0
+                  }
+                }
               }
             }
           }

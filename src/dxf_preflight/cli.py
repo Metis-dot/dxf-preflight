@@ -70,6 +70,16 @@ def render_text(report: dict) -> str:
     s = report["summary"]
     lines.append(f"Entities: {s['modelspace_entities']} scanned, {s['supported_entities']} supported, {s['unsupported_entities']} unsupported")
     lines.append(f"Segments: {s['extracted_segments']} extracted, {s['unique_nondegenerate_segments']} unique nondegenerate")
+    curves = s.get("curve_measurements")
+    if curves is not None and (curves["scanned_curve_entities"] or curves["status"] == "unknown"):
+        lines.append(f"Curve measurements only: {curves['status']}, {curves['measured_entities']} measured, {curves['skipped_entities']} skipped in scanned population; all curve contour checks NOT RUN")
+        for curve in curves["measurements"][:8]:
+            lines.append(f"  {curve['entity_type']} handle {curve['handle']}, layer {curve['layer']!r}: radius {curve['radius']}, approximate length {curve['length']} drawing units")
+            lines.append(f"    Approximate XY bounds: {curve['bounds']['minimum']} to {curve['bounds']['maximum']}")
+            if curve["entity_type"] == "ARC":
+                lines.append(f"    Counterclockwise sweep: {curve['counterclockwise_sweep_degrees']} degrees; approximate endpoints: {curve['start']} to {curve['end']}")
+        if curves["measured_entities"] > 8:
+            lines.append(f"  Showing 8 of {curves['measured_entities']} measured curves; all retained measurements remain in JSON")
     lines.append("Check states: " + ", ".join(f"{name}={state}" for name, state in report["checks"].items()))
     lines.extend(["", "Findings:"])
     if not report["findings"]:
@@ -85,7 +95,10 @@ def render_text(report: dict) -> str:
     for kind, handles in sorted(unsupported.items()):
         lines.append(f"  [SCOPE001] BLOCKER: Unsupported {kind}: {len(handles)} entities")
         lines.append(f"    Representative handles ({min(8, len(handles))} of {len(handles)}): {', '.join(handles[:8])}; all findings remain in JSON")
-        lines.append("    Next: inspect unsupported content in CAD; this tool did not check it or approximate it.")
+        if kind in {"CIRCLE", "ARC"}:
+            lines.append("    Next: inspect curve geometry and connectivity in CAD; measurement-only reporting does not check duplicates, intersections or closure.")
+        else:
+            lines.append("    Next: inspect unsupported content in CAD; this tool did not check it or approximate it.")
     lines.extend(["", "Not checked:"] + [f"  - {item}" for item in report["not_checked"]])
     lines.extend(["", report["disclaimer"]])
     return "\n".join(lines) + "\n"

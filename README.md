@@ -10,6 +10,11 @@ coincident segments, open endpoints and same-layer interior contacts, with CAD
 entity handles and coordinates. Parsing is provided by [ezdxf](https://github.com/mozman/ezdxf).
 All included drawings are original invented examples; no customer geometry is needed.
 
+Standalone planar CIRCLE/ARC entities also get **measurement-only** radius,
+length and XY bounds, plus ARC endpoints and counterclockwise sweep. These are
+approximate display values in drawing units. Curves still make the report
+incomplete because their duplicates, intersections and connectivity are unchecked.
+
 **Every result requires manual CAD/CAM review. Exit 0 is only “limited checks
 clear”, never permission to manufacture, submit to a supplier, or skip review.**
 Reports always say `manual_review_required: true`, `gate_eligible: false`.
@@ -24,9 +29,19 @@ No repair, upload, telemetry, account, network analysis, or toolpath generation.
 
 **Any ARC, CIRCLE, INSERT, block definition (even unused), annotation, old
 POLYLINE, SPLINE or paperspace content makes the report incomplete.** No curve
-approximation, block expansion or flattening is performed. Findings on the
+tessellation, block expansion or flattening is performed. Findings on the
 supported subset remain visible. Do not change a drawing merely to obtain clear.
 See [the exact scope and budgets](docs/REFERENCE.md).
+
+Measurement-only curves must have an explicit center/radius (and ARC angles),
+exact `z=0`, default extrusion and zero thickness. Missing required attributes,
+invalid radius, equal normalized ARC angles, numeric overflow/coordinate collapse,
+or the 256-curve measurement budget leave measurements unknown. No full-drawing
+perimeter, closed-curve count or certification is inferred.
+
+Try `dxf-preflight fixtures/curve_measurements.dxf --expected-unit mm` for a
+rectangle with an independently measured circle and arc. Exit 2 is expected;
+the straight rectangle's endpoint cycle does not classify either curve.
 
 ## Install locally
 

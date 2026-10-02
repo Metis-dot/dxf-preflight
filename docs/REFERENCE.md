@@ -42,6 +42,49 @@ HATCH. Blocks are not recursively expanded. Unsupported attributes are not
 projected, approximated or silently discarded. Findings on supported geometry
 remain visible when unsupported content is also present.
 
+## Standalone CIRCLE/ARC measurements only
+
+The first 256 standalone modelspace CIRCLE/ARC entities are considered for
+analytic display measurements. Required entity attributes must be present;
+ezdxf's defaults for absent center, radius or ARC angles are not accepted.
+The center must be exactly `z=0`, with default `(0,0,1)` extrusion and zero
+thickness. Reversed/tilted/nonunit extrusion, elevated/thick curves, block
+contents and paperspace curves are not transformed or measured.
+
+For eligible entities the report retains center, radius, CAD handle/layer/style,
+length and XY bounds. ARC records also retain original and normalized angles,
+counterclockwise sweep, and endpoints. Arc bounds use the endpoints and only
+those cardinal extrema reached by that sweep; a wrapped 315-to-45-degree arc
+does not get whole-circle bounds. The [ezdxf ARC definition](https://ezdxf.readthedocs.io/en/stable/dxfentities/arc.html)
+specifies the counterclockwise direction around the extrusion vector; the
+[CIRCLE definition](https://ezdxf.readthedocs.io/en/stable/dxfentities/circle.html)
+specifies OCS center/radius semantics.
+
+Derived length, endpoints and bounds are explicitly **approximate floating-point
+display values**, not certified interval enclosures. Cardinal-angle inclusion
+and angle normalization use exact fractions of the already parsed floats; no
+precision lost during DXF parsing is recovered. Non-finite values, nonpositive
+radius, overflow/underflow, unresolved radius at a large center, or collapsed
+arc endpoints get no measurement. Equal normalized ARC angles are rejected
+rather than inferred to mean a zero-length arc or a full circle. No endpoint
+tolerance, unit conversion, snapping or tessellation is used for measurements.
+
+`summary.curve_measurements.status` is checked only when the entity scan completed
+and every encountered curve was measured, including the empty curve population.
+Rejected/budget-skipped curves or a truncated scan make it unknown; already
+measured records remain visible. A worker failure makes it unknown with no
+invented measurements. An unreadable input leaves it not_run. The counts refer
+only to the scanned curve population; they never claim the unscanned remainder.
+The text report shows at most eight records; JSON retains up to 256.
+
+**Every curve still emits SCOPE001 and remains outside the supported segment
+population.** `supported_entities` retains its straight-segment meaning;
+`unsupported_entities` includes measured curves. Curve duplicates, line/curve
+or curve/curve contacts/intersections, endpoint connectivity and closed-contour
+classification are all unchecked. A CIRCLE measurement does not add an endpoint
+cycle; an ARC cannot close a line chain in this tool. No whole-drawing perimeter,
+operation intent, manufacturing suitability or closed-curve count is reported.
+
 ## Tolerance and units
 
 The default endpoint tolerance is `1e-6` **drawing units**, an absolute Euclidean
@@ -119,7 +162,7 @@ guarantee. Paths remain local unless you choose to share the report.
 | SCOPE008 | Entity attribute extraction failed |
 | SCOPE009 | Worker start/crash/invalid result or an unconfirmed required check |
 | GEOM001 | Non-finite geometry values |
-| GEOM002 | Too few vertices, zero/short segment |
+| GEOM002 | Too few vertices, zero/short segment, nonpositive curve radius or equal normalized ARC angles |
 | GEOM003 | No supported segments |
 | DUP001 | Same-layer exact direction-normalized segment duplicate |
 | TOPO001 | Degree-one endpoints / open chains |
@@ -153,7 +196,7 @@ still too limited to gate supplier uploads or production on its own.
 
 Limits: 32 MiB input, 20,000 scanned modelspace entities, 10,000 extracted
 segments, 1,000,000 endpoint comparisons, 250,000 X-overlap segment-pair
-candidates, 256 reported segment-interior findings, and 4,096-bit exact
+candidates, 256 reported segment-interior findings, 256 attempted curve measurements, and 4,096-bit exact
 coordinate integers. A large polyline is rejected
 before segment expansion. Exceeding a limit produces `incomplete`, not clear.
 The parser loads the file **before** entity/geometry limits apply. The CLI now supervises parsing and analysis in a fixed subprocess with a 30-second wall-clock deadline, configurable with `--timeout`. A timeout kills and reaps that direct worker and returns `incomplete`/SCOPE007. Worker start, crash or invalid result returns `incomplete`/SCOPE009. No rendering, HATCH tessellation, recovery or audit is invoked. There are **no OS-enforced memory/CPU limits and no security sandbox**. The in-process `analyze()` API has no wall deadline. Use small trusted drawings; untrusted input requires your own isolated environment with OS-level limits. Files can change between reads; do not concurrently modify them.
@@ -166,9 +209,11 @@ PYTHONPATH=src python scripts/generate_reports.py
 python -m pytest -q
 ```
 
-All 15 included fixtures are original synthetic drawings, not factory/customer
+All 19 included fixtures are original synthetic drawings, not factory/customer
 samples. Actual JSON/text outputs are included in `reports/`; the compact
 `reports/fixture_summary.json` lists source hashes, results and rule IDs.
 Regenerating drawings changes library-generated document metadata and hashes;
 regenerate reports afterward. Test count and execution evidence are recorded
 in `VALIDATION.md`. Synthetic coverage is not market or production validation.
+`scripts/generate_curve_fixtures.py` regenerates only the four curve examples;
+`scripts/generate_fixtures.py` regenerates the original 15 straight/scope examples.
